@@ -34,7 +34,6 @@
     <modules>
         <module>TimoCloud-Universal</module>
         <module>TimoCloud-API</module>
-        <module>TimoCloud-Staging</module>
     </modules>
 
     <developers>
