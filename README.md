@@ -16,7 +16,7 @@ TimoCloud is full of innovative features. Here is a list of the most important o
  - **Beautiful, live-updating sign system**: Use the integrated server join sign system to let players access all your servers. Signs are dynamic - that means only _free_ servers will be displayed - and can be animated.
  
  ## Download
- You can download the latest version [here](https://jenkins.timo.cloud/job/TimoCloud/job/master/lastSuccessfulBuild/artifact/TimoCloud-Universal/target/TimoCloud.jar)
+ You can download the latest version [here](https://github.com/Fedox-die-Ente/TimoCloudButWithMoreFeatures/releases)
  
  ## Setup
  See the [Wiki](https://github.com/TimoCloud/TimoCloud/wiki)
@@ -31,8 +31,3 @@ TimoCloud is full of innovative features. Here is a list of the most important o
  
  ## Support
  For support, please join our [Discord](https://discord.gg/RTNn4SE)
- 
- ## Hosting
-Are you looking for **cheap servers** with **high performance** working **perfectly** with TimoCloud? **KernelHost.de** offers everything you need and works perfectly with TimoCloud!
-
- [![Hoster](https://timo.cloud/img/hoster_large.png)](https://www.kernelhost.de/rootserver-mieten)
