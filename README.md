@@ -22,7 +22,7 @@ TimoCloud is full of innovative features. Here is a list of the most important o
  See the [Wiki](https://github.com/TimoCloud/TimoCloud/wiki)
 
  ## Building from source
-**Please use Java 8 to Build the Projekt**
+**Please use Java 8 to build the project**
  ```
  git clone https://github.com/TimoCloud/TimoCloud
  cd TimoCloud
