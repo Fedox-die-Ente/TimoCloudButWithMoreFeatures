@@ -38,4 +38,4 @@ mvn clean package
 
 ## Support
 
-For support, please join our [Discord](https://discord.gg/RTNn4SE).
+For support, please join our [Discord](https://discord.gg/RTNn4SE).<br>Please note that the support is probably not available for my fork. I dont provide support for the original TimoCloud project, but I will try to help you with my fork if you have any questions.
