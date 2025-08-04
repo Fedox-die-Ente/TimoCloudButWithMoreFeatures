@@ -43,6 +43,7 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.CharsetUtil;
 import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -54,6 +55,7 @@ import java.util.concurrent.TimeUnit;
 @Getter
 public class TimoCloudVelocity implements TimoCloudLogger {
 
+    @Getter
     private static TimoCloudVelocity instance;
     private final ProxyServer server;
     private final Logger logger;
@@ -65,17 +67,15 @@ public class TimoCloudVelocity implements TimoCloudLogger {
     private VelocitySocketMessageManager socketMessageManager;
     private VelocityStringHandler velocityStringHandler;
     private TimoCloudCommand timoCloudCommand;
+    @Setter
     private String prefix;
+    @Setter
     private boolean shuttingDown = false;
 
     @Inject
     public TimoCloudVelocity(ProxyServer server, Logger logger) {
         this.server = server;
         this.logger = logger;
-    }
-
-    public static TimoCloudVelocity getInstance() {
-        return instance;
     }
 
     @Override
@@ -106,7 +106,7 @@ public class TimoCloudVelocity implements TimoCloudLogger {
             while (!((TimoCloudUniversalAPIBasicImplementation) TimoCloudAPI.getUniversalAPI()).gotAnyData()) {
                 try {
                     Thread.sleep(50); // Wait until we get the API data
-                } catch (Exception e) {
+                } catch (Exception ignored) {
                 }
             }
             timoCloudCommand.loadNames();
@@ -148,7 +148,7 @@ public class TimoCloudVelocity implements TimoCloudLogger {
         getServer().getCommandManager().register(server.getCommandManager().metaBuilder("glist").aliases("redisbungee", "rglist").build(), new GlistCommand());
         getServer().getCommandManager().register(server.getCommandManager().metaBuilder("find").aliases("rfind").build(), new FindCommand());
         List<String> lobbyCommands = getFileManager().getConfig().getList("lobbyCommands");
-        if (lobbyCommands.size() > 0) {
+        if (!lobbyCommands.isEmpty()) {
             String[] aliases = lobbyCommands.subList(1, lobbyCommands.size()).toArray(new String[0]);
             server.getCommandManager().register(server.getCommandManager().metaBuilder(lobbyCommands.get(0)).aliases(aliases).build(), new LobbyCommand());
         }
@@ -238,6 +238,7 @@ public class TimoCloudVelocity implements TimoCloudLogger {
         getServer().getEventManager().register(this, new ProxyPing());
         getServer().getEventManager().register(this, new EventMonitor());
         getServer().getEventManager().register(this, new IpInjector());
+        TimoCloudAPI.getEventAPI().registerListener(new ServerNotify());
     }
 
     public String getProxyName() {
@@ -247,15 +248,5 @@ public class TimoCloudVelocity implements TimoCloudLogger {
     public String getProxyId() {
         return System.getProperty("timocloud-proxyid");
     }
-
-    public void setPrefix(String prefix) {
-        this.prefix = prefix;
-    }
-
-
-    public void setShuttingDown(boolean shuttingDown) {
-        this.shuttingDown = shuttingDown;
-    }
-
 
 }

@@ -1,4 +1,5 @@
 LobbyConnect: '&7Successfully connected to &b{server_name}'
 NoFreeLobbyFound: '&cNo Lobby server found!'
 NoFallBackGroupFound: '&cWe are sorry, but we could not find a suitable server to connect you to.'
-
+ServerStarted: '&a[+] &b{server_name} &7({group_name}) &7started on &e{base_name} &7(ID: {server_id})'
+ServerStopped: '&c[-] &b{server_name} &7({group_name}) &7stopped. (ID: {server_id})'
