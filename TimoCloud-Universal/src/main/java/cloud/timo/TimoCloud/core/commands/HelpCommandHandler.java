@@ -4,41 +4,71 @@ import cloud.timo.TimoCloud.api.core.commands.CommandHandler;
 import cloud.timo.TimoCloud.api.core.commands.CommandSender;
 import cloud.timo.TimoCloud.core.TimoCloudCore;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 public class HelpCommandHandler implements CommandHandler {
 
+    private final Map<String, String> generalCommands = new LinkedHashMap<>();
+    private final Map<String, String> baseManagementCommands = new LinkedHashMap<>();
+    private final Map<String, String> groupManagementCommands = new LinkedHashMap<>();
+    private final Map<String, String> serverProxyActionCommands = new LinkedHashMap<>();
+
+    public HelpCommandHandler() {
+        // General Commands
+        generalCommands.put("help", "&6help &7- &7Shows this help page.");
+        generalCommands.put("version", "&6version &7- &7Shows the plugin version.");
+        generalCommands.put("reload", "&6reload &7- &7Reloads all configurations.");
+        generalCommands.put("reloadPlugins", "&6reloadPlugins &7- &7Reloads all plugins.");
+        generalCommands.put("shutdown", "&6shutdown &7- &7Shuts down TimoCloud Core.");
+
+        // Base Management Commands
+        baseManagementCommands.put("addbase", "&6addbase <publicKey> &7- &7Registers a new base.");
+        baseManagementCommands.put("editbase", "&6editbase <name> <setting> <value> &7- &7Edits a setting of a base. &b(Settings: name, maxRam, keepFreeRam, maxCpuLoad)");
+        baseManagementCommands.put("baseinfo", "&6baseinfo <baseName> &7- &7Displays base information.");
+        baseManagementCommands.put("listbases", "&6listbases &7- &7Lists all registered bases.");
+
+        // Group Management Commands
+        groupManagementCommands.put("creategroup server", "&6creategroup server <groupName> <onlineAmount> <ram> <static> [base] &7- &7Creates a server group. &b([base] only if static=true)");
+        groupManagementCommands.put("creategroup proxy", "&6creategroup proxy <groupName> <ram> <static> [base] &7- &7Creates a proxy group. &b([base] only if static=true)");
+        groupManagementCommands.put("deletegroup", "&6deletegroup <groupName> &7- &7Deletes a group.");
+        groupManagementCommands.put("editgroup server", "&6editgroup <name> <setting> <value> &7- &7Edits a setting of a server group. &b(Settings: onlineAmount, maxAmount, ram, static, priority, base, jrePath)");
+        groupManagementCommands.put("editgroup proxy", "&6editgroup <name> <setting> <value> &7- &7Edits a setting of a proxy group. &b(Settings: playersPerProxy, maxPlayers, keepFreeSlots, minAmount, maxAmount, ram, static, priority, base, jrePath)");
+        groupManagementCommands.put("groupinfo", "&6groupinfo <groupName> &7- &7Displays group information.");
+        groupManagementCommands.put("listgroups", "&6listgroups &7- &7Lists all groups and started servers.");
+
+        // Server/Proxy Action Commands
+        serverProxyActionCommands.put("start", "&6start <groupName> &7- &7Starts a server or proxy group.");
+        serverProxyActionCommands.put("restart", "&6restart <groupName|baseName|serverName|proxyName> &7- &7Restarts the given group, base, server, or proxy.");
+        serverProxyActionCommands.put("sendcommand", "&6sendcommand <groupName|serverName|proxyName> <command> &7- &7Sends the given command to all servers of a group or a specific server/proxy.");
+    }
+
     @Override
     public void onCommand(String command, CommandSender sender, String... args) {
-        sender.sendMessage("&6Available commands for &bTimo&fCloud&7:");
-        sender.sendMessage("  &6help &7- &7shows this page");
-        sender.sendMessage("  &6version &7- &7shows the plugin version");
-        sender.sendMessage("  &6reload &7- &7reloads all configs");
-        sender.sendMessage("  &6addbase <publicKey> &7- registers a new base");
-        sender.sendMessage("  &6editbase &7<&2name&7> <&2name &7(&9String&7) | &2maxRam &7(&9int&7) | &2keepFreeRam &7(&9int&7) | &2maxCpuLoad &7(&9double&7)> <&2value&7> &7- edits the give setting of a base");
-        sender.sendMessage("  &6addgroup server &7<&2groupName &7(&9String&7)> <&2onlineAmount &7(&9int&7)> <&2ram &7(&9int&7)> <&2static &7(&9boolean&7)> <&2base &7(&9String&7), &6only needed if static=true&7> - &7creates a server group");
-        sender.sendMessage("  &6addgroup proxy &7<&2groupName &7(&9String&7)> <&2ram &7(&9int&7)> <&2static &7(&9boolean&7)> <&2base &7(&9String&7), &6only needed if static=true&7> - &7creates a proxy group");
-        sender.sendMessage("  &6removegroup &7<&2groupName&7> - &7deletes a group");
-        sender.sendMessage("  &6editgroup &7<&2name&7> <&2onlineAmount &7(&9int&7) | &2maxAmount &7(&9int&7) | &2ram &7(&9int&7) | &2static &7(&9boolean&7) | &2priority &7(&9int&7) | &2base &7(&9String&7) | &2jrePath &7(&9String&7)> <&2value&7> - &7edits the give setting of a server group");
-        sender.sendMessage("  &6editgroup &7<&2name&7> <&2playersPerProxy &7(&9int&7) | &2maxPlayers &7(&9int&7) | &2keepFreeSlots &7(&9int&7) | &2minAmount &7(&9int&7) | &2maxAmount &7(&9int&7) | &2ram &7(&9int&7) | &2static &7(&9boolean&7) | &2priority &7(&9int&7) | &2base &7(&9String&7) | &2jrePath &7(&9String&7)> <&2value&7> - &7edits the give setting of a proxy group");
-        sender.sendMessage("  &6start &7<&2groupName&7> - &7starts a server or proxy group");
-        sender.sendMessage("  &6restart &7<&2groupName&7 | &2baseName&7 | &2serverName&7 | &2proxyName&7> - &7restarts the given group, base, server, or proxy (If a base, stops/restarts every server and proxy on the base)");
-        sender.sendMessage("  &6groupinfo &7<&2groupName&7> - displays group info");
-        sender.sendMessage("  &6listgroups &7- &7lists all groups and started servers");
-        sender.sendMessage("  &6baseinfo &7<&2baseName&7> - displays base info");
-        sender.sendMessage("  &6listbases &7- &7lists all bases");
-        sender.sendMessage("  &6sendcommand &7<&2groupName&7 | &2serverName&7 | &2proxyName&7> <&2command&7> - &7sends the given command to all server of a given group or the given server");
+        sender.sendMessage("&6--- &bTimo&fCloud &6Help &6---");
+        sender.sendMessage(" ");
+
+        sendCategory(sender, "&eGeneral:", generalCommands);
+        sendCategory(sender, "&eBase Management:", baseManagementCommands);
+        sendCategory(sender, "&eGroup Management:", groupManagementCommands);
+        sendCategory(sender, "&eServer/Proxy Actions:", serverProxyActionCommands);
 
         Set<String> pluginCommands = TimoCloudCore.getInstance().getCommandManager().getPluginCommandHandlers().keySet();
-
-        if (pluginCommands.size() != 0) {
+        if (!pluginCommands.isEmpty()) {
             sender.sendMessage(" ");
-            sender.sendMessage("&6Available Plugin commands&7:");
-
+            sender.sendMessage("&eAvailable Plugin Commands:");
             for (String pluginCommand : pluginCommands) {
                 sender.sendMessage("  &6" + pluginCommand);
             }
         }
+        sender.sendMessage(" ");
+        sender.sendMessage("&6--------------------");
     }
 
+    private void sendCategory(CommandSender sender, String categoryTitle, Map<String, String> commands) {
+        sender.sendMessage(categoryTitle);
+        commands.values().forEach(sender::sendMessage);
+        sender.sendMessage(" ");
+    }
 }
