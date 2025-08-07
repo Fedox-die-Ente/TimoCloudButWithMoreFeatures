@@ -144,7 +144,7 @@ public class TimoCloudVelocity implements TimoCloudLogger {
     }
 
     private void registerCommands() {
-        getServer().getCommandManager().register(server.getCommandManager().metaBuilder("timocloud").aliases("tc").build(), getTimoCloudCommand());
+        getServer().getCommandManager().register(server.getCommandManager().metaBuilder("timocloud").aliases("tc", "cloud").build(), getTimoCloudCommand());
         getServer().getCommandManager().register(server.getCommandManager().metaBuilder("glist").aliases("redisbungee", "rglist").build(), new GlistCommand());
         getServer().getCommandManager().register(server.getCommandManager().metaBuilder("find").aliases("rfind").build(), new FindCommand());
         List<String> lobbyCommands = getFileManager().getConfig().getList("lobbyCommands");
