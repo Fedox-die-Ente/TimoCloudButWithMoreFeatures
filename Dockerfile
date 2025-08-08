@@ -46,4 +46,5 @@ USER timocloud
 
 CMD screen -dm -S core java -jar /home/timocloud/TimoCloud.jar --module=CORE && \
     screen -dm -S base java -jar /home/timocloud/TimoCloud.jar --module=BASE && \
+    screen -dm -S cord java -jar /home/timocloud/TimoCloud.jar --module=CORD && \
     tail -f /dev/null
