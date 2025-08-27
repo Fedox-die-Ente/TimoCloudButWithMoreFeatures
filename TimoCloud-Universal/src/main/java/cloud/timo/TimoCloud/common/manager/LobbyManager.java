@@ -110,7 +110,7 @@ public class LobbyManager {
 
         TimoCloudLogger.getLogger().info("After filtering: " + servers.size() + " valid servers available");
 
-        if (servers.size() == 0) {
+        if (servers.isEmpty()) {
             TimoCloudLogger.getLogger().warning("No valid lobby servers found for player " + uuid +
                 ". Total servers in group: " + group.getServers().size() +
                 ", Invalid port servers: " + invalidPortServers);
