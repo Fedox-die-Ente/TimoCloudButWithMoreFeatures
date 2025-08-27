@@ -20,6 +20,7 @@ RUN apt-get update \
         screen \
         curl \
         wget \
+        jq \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -32,8 +33,11 @@ WORKDIR /home/timocloud
 
 COPY . .
 
-RUN rm -rf /home/timocloud/TimoCloud.jar
-RUN wget https://jenkins.timo.cloud/job/TimoCloud/job/master/lastSuccessfulBuild/artifact/TimoCloud-Universal/target/TimoCloud.jar
+RUN rm -f /home/timocloud/TimoCloud.jar
+
+RUN LATEST_URL=$(curl -s https://api.github.com/repos/Fedox-die-Ente/TimoCloudButWithMoreFeatures/releases/latest \
+    | jq -r '.assets[] | select(.name | test("TimoCloud.*\\.jar")) | .browser_download_url') \
+    && wget -O TimoCloud.jar "$LATEST_URL"
 
 RUN chown -R timocloud:timocloud /home/timocloud \
     && chmod 755 TimoCloud.jar
