@@ -110,10 +110,35 @@ public class TimoCloudUniversalAPIStorageUpdateListener implements Listener {
 
     @EventHandler
     public void onPlayerDisconnectEvent(PlayerDisconnectEvent event) {
-        api.getPlayerStorage().remove(event.getPlayer());
-        ServerObjectBasicImplementation server = ((ServerObjectBasicImplementation) event.getPlayer().getServer());
-        if (server != null) server.removePlayer(((PlayerObjectBasicImplementation) event.getPlayer()).toLink());
-        ((ProxyObjectBasicImplementation) event.getPlayer().getProxy()).removePlayer(((PlayerObjectBasicImplementation) event.getPlayer()).toLink());
+        try {
+            // Remove player from global storage first
+            api.getPlayerStorage().remove(event.getPlayer());
+
+            // Safely remove player from server if server exists
+            ServerObjectBasicImplementation server = ((ServerObjectBasicImplementation) event.getPlayer().getServer());
+            if (server != null) {
+                server.removePlayer(((PlayerObjectBasicImplementation) event.getPlayer()).toLink());
+            }
+
+            // Safely remove player from proxy if proxy exists
+            ProxyObjectBasicImplementation proxy = ((ProxyObjectBasicImplementation) event.getPlayer().getProxy());
+            if (proxy != null) {
+                proxy.removePlayer(((PlayerObjectBasicImplementation) event.getPlayer()).toLink());
+            }
+
+            ((PlayerObjectBasicImplementation) event.getPlayer()).setOnline(false);
+
+        } catch (Exception e) {
+            System.err.println("[TimoCloud] Error during player disconnect cleanup for player " +
+                event.getPlayer().getName() + ": " + e.getMessage());
+            e.printStackTrace();
+
+            try {
+                api.getPlayerStorage().remove(event.getPlayer());
+            } catch (Exception storageException) {
+                System.err.println("[TimoCloud] Critical: Failed to remove player from storage: " + storageException.getMessage());
+            }
+        }
     }
 
     @EventHandler

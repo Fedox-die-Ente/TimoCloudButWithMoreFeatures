@@ -26,17 +26,32 @@ public class EventMonitor {
             EventTransmitter.sendEvent(new PlayerConnectEventBasicImplementation(PlayerUtil.playerToObject(event.getPlayer(), event.getServer())));
         } else { // Server change
             EventTransmitter.sendEvent(new PlayerServerChangeEventBasicImplementation(
-                    PlayerUtil.playerToObject(event.getPlayer(), event.getServer()),
-                    event.getPreviousServer().get().getServerInfo().getName(),
-                    event.getServer().getServerInfo().getName()));
+                PlayerUtil.playerToObject(event.getPlayer(), event.getServer()),
+                event.getPreviousServer().get().getServerInfo().getName(),
+                event.getServer().getServerInfo().getName()));
         }
     }
 
     @Subscribe
     public void onPlayerQuitEvent(DisconnectEvent event) {
-        TimoCloudVelocity.getInstance().sendPlayerCount();
-        if (!event.getLoginStatus().equals(DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN)) return;
-        EventTransmitter.sendEvent(new PlayerDisconnectEventBasicImplementation(getPlayer(event.getPlayer())));
+        try {
+            TimoCloudVelocity.getInstance().sendPlayerCount();
+            if (!event.getLoginStatus().equals(DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN)) return;
+
+            PlayerObject playerObject = getPlayer(event.getPlayer());
+            EventTransmitter.sendEvent(new PlayerDisconnectEventBasicImplementation(playerObject));
+
+        } catch (Exception e) {
+            TimoCloudVelocity.getInstance().severe("Error during player quit event for player " +
+                event.getPlayer().getUsername() + ": " + e.getMessage());
+            e.printStackTrace();
+
+            try {
+                TimoCloudVelocity.getInstance().sendPlayerCount();
+            } catch (Exception countException) {
+                TimoCloudVelocity.getInstance().severe("Failed to update player count: " + countException.getMessage());
+            }
+        }
     }
 
     private PlayerObject getPlayer(Player player) {

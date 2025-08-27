@@ -24,9 +24,9 @@ public class CoreEventManager implements Listener {
 
     public void fireEvent(Event event) {
         Message message = Message.create()
-                .setType(MessageType.EVENT_FIRED)
-                .set("eT", event.getType().name())
-                .setData(eventToJSON(event));
+            .setType(MessageType.EVENT_FIRED)
+            .set("eT", event.getType().name())
+            .setData(eventToJSON(event));
         for (Communicatable communicatable : TimoCloudCore.getInstance().getInstanceManager().getAllCommunicatableInstances()) {
             if (communicatable instanceof Base) continue; // Bases do not support events
             communicatable.sendMessage(message);
@@ -60,16 +60,35 @@ public class CoreEventManager implements Listener {
 
     @EventHandler
     public void onPlayerDisconnect(PlayerDisconnectEvent event) {
-        ((PlayerObjectBasicImplementation) event.getPlayer()).setOnline(false);
-        ProxyObject proxyObject = event.getPlayer().getProxy();
-        if (proxyObject != null) {
-            Proxy proxy = TimoCloudCore.getInstance().getInstanceManager().getProxyByProxyObject(proxyObject);
-            if (proxy != null) proxy.onPlayerDisconnect(event.getPlayer());
-        }
-        ServerObject serverObject = event.getPlayer().getServer();
-        if (serverObject != null) {
-            Server server = TimoCloudCore.getInstance().getInstanceManager().getServerByServerObject(serverObject);
-            if (server != null) server.onPlayerDisconnect(event.getPlayer());
+        try {
+            ((PlayerObjectBasicImplementation) event.getPlayer()).setOnline(false);
+
+            ProxyObject proxyObject = event.getPlayer().getProxy();
+            if (proxyObject != null) {
+                Proxy proxy = TimoCloudCore.getInstance().getInstanceManager().getProxyByProxyObject(proxyObject);
+                if (proxy != null) {
+                    proxy.onPlayerDisconnect(event.getPlayer());
+                }
+            }
+
+            ServerObject serverObject = event.getPlayer().getServer();
+            if (serverObject != null) {
+                Server server = TimoCloudCore.getInstance().getInstanceManager().getServerByServerObject(serverObject);
+                if (server != null) {
+                    server.onPlayerDisconnect(event.getPlayer());
+                }
+            }
+
+        } catch (Exception e) {
+            TimoCloudCore.getInstance().severe("Error during player disconnect event handling for player " +
+                event.getPlayer().getName() + ": " + e.getMessage());
+            TimoCloudCore.getInstance().severe(e);
+
+            try {
+                ((PlayerObjectBasicImplementation) event.getPlayer()).setOnline(false);
+            } catch (Exception forceException) {
+                TimoCloudCore.getInstance().severe("Critical: Failed to set player offline status: " + forceException.getMessage());
+            }
         }
     }
 

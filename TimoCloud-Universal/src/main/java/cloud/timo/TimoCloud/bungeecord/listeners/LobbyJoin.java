@@ -42,22 +42,34 @@ public class LobbyJoin implements Listener {
         ProxiedPlayer player = event.getPlayer();
         final ServerObject freeLobby = TimoCloudBungee.getInstance().getLobbyManager().getFreeLobby(player.getUniqueId());
         if (freeLobby == null) {
-            TimoCloudBungee.getInstance().severe("No lobby server found.");
+            TimoCloudBungee.getInstance().severe("No lobby server found for player " + player.getName());
             pending.remove(player.getUniqueId());
 
             kickPlayer(player);
             event.setCancelled(true);
             return;
         }
+
+        if (freeLobby.getSocketAddress() == null || freeLobby.getSocketAddress().getPort() <= 0) {
+            TimoCloudBungee.getInstance().severe("Lobby server " + freeLobby.getName() +
+                " has invalid port for player " + player.getName());
+            pending.remove(player.getUniqueId());
+            kickPlayer(player);
+            event.setCancelled(true);
+            return;
+        }
+
         ServerInfo info = ProxyServer.getInstance().getServerInfo(freeLobby.getName());
         if (info == null) {
-            TimoCloudBungee.getInstance().severe("No lobby server found.");
+            TimoCloudBungee.getInstance().severe("No lobby server found for player " + player.getName());
             pending.remove(player.getUniqueId());
-
             kickPlayer(player);
             event.setCancelled(true);
             return;
         }
+
+        TimoCloudBungee.getInstance().info("Connecting " + player.getName() +
+            " to lobby server: " + info.getName() + " (" + info.getAddress() + ")");
         event.setTarget(info);
         pending.remove(player.getUniqueId());
     }
@@ -68,7 +80,17 @@ public class LobbyJoin implements Listener {
         event.setCancelled(true);
         final ServerObject freeLobby = TimoCloudBungee.getInstance().getLobbyManager().getFreeLobby(event.getPlayer().getUniqueId());
         if (freeLobby == null) return;
-        event.setCancelServer(ProxyServer.getInstance().getServerInfo(freeLobby.getName()));
+
+        if (freeLobby.getSocketAddress() == null || freeLobby.getSocketAddress().getPort() <= 0) {
+            TimoCloudBungee.getInstance().warning("Fallback server " + freeLobby.getName() +
+                " has invalid port for player " + event.getPlayer().getName());
+            return;
+        }
+
+        ServerInfo fallbackServer = ProxyServer.getInstance().getServerInfo(freeLobby.getName());
+        if (fallbackServer != null) {
+            event.setCancelServer(fallbackServer);
+        }
     }
 
     private void kickPlayer(ProxiedPlayer proxiedPlayer) {

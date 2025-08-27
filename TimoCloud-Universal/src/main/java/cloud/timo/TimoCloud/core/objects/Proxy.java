@@ -113,18 +113,18 @@ public class Proxy implements Instance, Communicatable {
         try {
             starting = true;
             Message message = Message.create()
-                    .setType(MessageType.BASE_START_PROXY)
-                    .set("name", getName())
-                    .set("id", getId())
-                    .set("group", getGroup().getName())
-                    .set("ram", getGroup().getRam())
-                    .set("static", getGroup().isStatic())
-                    .set("motd", getGroup().getMotd())
-                    .set("maxplayers", getGroup().getMaxPlayerCount())
-                    .set("maxplayersperproxy", getGroup().getMaxPlayerCountPerProxy())
-                    .set("globalHash", HashUtil.getHashes(TimoCloudCore.getInstance().getFileManager().getProxyGlobalDirectory()))
-                    .set("javaParameters", getGroup().getJavaParameters())
-                    .set("jrePath", getGroup().getJrePath());
+                .setType(MessageType.BASE_START_PROXY)
+                .set("name", getName())
+                .set("id", getId())
+                .set("group", getGroup().getName())
+                .set("ram", getGroup().getRam())
+                .set("static", getGroup().isStatic())
+                .set("motd", getGroup().getMotd())
+                .set("maxplayers", getGroup().getMaxPlayerCount())
+                .set("maxplayersperproxy", getGroup().getMaxPlayerCountPerProxy())
+                .set("globalHash", HashUtil.getHashes(TimoCloudCore.getInstance().getFileManager().getProxyGlobalDirectory()))
+                .set("javaParameters", getGroup().getJavaParameters())
+                .set("jrePath", getGroup().getJrePath());
             if (!getGroup().isStatic()) {
                 File templateDirectory = new File(TimoCloudCore.getInstance().getFileManager().getProxyTemplatesDirectory(), getGroup().getName());
                 try {
@@ -153,9 +153,9 @@ public class Proxy implements Instance, Communicatable {
     public void requestPidStatus() {
         if (getPid() == -1) return;
         Message message = Message.create()
-                .setType(MessageType.BASE_PID_EXIST_REQUEST)
-                .set("pid", getPid())
-                .set("id", getId());
+            .setType(MessageType.BASE_PID_EXIST_REQUEST)
+            .set("pid", getPid())
+            .set("id", getId());
         getBase().sendMessage(message);
     }
 
@@ -168,26 +168,39 @@ public class Proxy implements Instance, Communicatable {
     @Override
     public void kill() {
         Message message = Message.create()
-                .setType(MessageType.BASE_INSTANCE_KILL)
-                .setData(getId());
+            .setType(MessageType.BASE_INSTANCE_KILL)
+            .setData(getId());
         getBase().sendMessage(message);
         TimoCloudCore.getInstance().getCloudFlareManager().unregisterProxy(this);
         onShutdown();
     }
 
     public void registerServer(Server server) {
-        sendMessage(Message.create()
+        if (server.getPort() <= 0) {
+            TimoCloudCore.getInstance().warning("Cannot register server " + server.getName() +
+                " with proxy " + getName() + " - invalid port: " + server.getPort());
+            return;
+        }
+
+        try {
+            sendMessage(Message.create()
                 .setType(MessageType.PROXY_ADD_SERVER)
                 .set("name", server.getName())
                 .set("address", server.getAddress().getAddress().getHostAddress())
                 .set("port", server.getPort()));
-        if (!registeredServers.contains(server)) registeredServers.add(server);
+            if (!registeredServers.contains(server)) registeredServers.add(server);
+            TimoCloudCore.getInstance().info("Registered server " + server.getName() +
+                " with proxy " + getName() + " at " + server.getAddress());
+        } catch (Exception e) {
+            TimoCloudCore.getInstance().severe("Failed to register server " + server.getName() +
+                " with proxy " + getName() + ": " + e.getMessage());
+        }
     }
 
     public void unregisterServer(Server server) {
         sendMessage(Message.create()
-                .setType(MessageType.PROXY_REMOVE_SERVER)
-                .set("name", server.getName()));
+            .setType(MessageType.PROXY_REMOVE_SERVER)
+            .set("name", server.getName()));
         registeredServers.remove(server);
     }
 
@@ -196,7 +209,12 @@ public class Proxy implements Instance, Communicatable {
     }
 
     public void onPlayerDisconnect(PlayerObject playerObject) {
-        getOnlinePlayers().remove(playerObject);
+        try {
+            getOnlinePlayers().remove(playerObject);
+        } catch (Exception e) {
+            TimoCloudCore.getInstance().severe("Error removing player " + playerObject.getName() +
+                " from proxy " + getName() + ": " + e.getMessage());
+        }
     }
 
     public void update(PlayerObject playerObject) {
@@ -207,7 +225,7 @@ public class Proxy implements Instance, Communicatable {
     @Override
     public void onMessage(Message message, Communicatable sender) {
         if (getChannel() != null &&
-                sender.getChannel().id().equals(getChannel().id())) {
+            sender.getChannel().id().equals(getChannel().id())) {
             //communicate
             lastContact = System.currentTimeMillis();
         }
@@ -349,31 +367,31 @@ public class Proxy implements Instance, Communicatable {
     @Override
     public void onHandshakeSuccess() {
         sendMessage(Message.create()
-                .setType(MessageType.PROXY_HANDSHAKE_SUCCESS));
+            .setType(MessageType.PROXY_HANDSHAKE_SUCCESS));
     }
 
     public void executeCommand(String command) {
         sendMessage(Message.create()
-                .setType(MessageType.PROXY_EXECUTE_COMMAND)
-                .setData(command));
+            .setType(MessageType.PROXY_EXECUTE_COMMAND)
+            .setData(command));
     }
 
     public void sendPlayer(String playerUUID, Server serverObject) {
         sendMessage(Message.create()
-                .setType(MessageType.PROXY_SEND_PLAYER)
-                .setData(Message.create()
-                        .set("playerUUID", playerUUID)
-                        .set("serverObject", serverObject.getName())
-                ));
+            .setType(MessageType.PROXY_SEND_PLAYER)
+            .setData(Message.create()
+                .set("playerUUID", playerUUID)
+                .set("serverObject", serverObject.getName())
+            ));
     }
 
     public void sendChatMessage(String playerUUID, String chatMessage) {
         sendMessage(Message.create()
-                .setType(MessageType.PROXY_SEND_MESSAGE)
-                .setData(Message.create()
-                        .set("playerUUID", playerUUID)
-                        .set("chatMessage", chatMessage)
-                ));
+            .setType(MessageType.PROXY_SEND_MESSAGE)
+            .setData(Message.create()
+                .set("playerUUID", playerUUID)
+                .set("chatMessage", chatMessage)
+            ));
     }
 
     @Override
@@ -490,13 +508,13 @@ public class Proxy implements Instance, Communicatable {
 
     public ProxyObject toProxyObject() {
         return new ProxyObjectCoreImplementation(
-                getName(),
-                getId(),
-                getGroup().toLink(),
-                getOnlinePlayers().stream().map(player -> ((PlayerObjectBasicImplementation) player).toLink()).collect(Collectors.toSet()),
-                getOnlinePlayerCount(),
-                getBase().toLink(),
-                getAddress()
+            getName(),
+            getId(),
+            getGroup().toLink(),
+            getOnlinePlayers().stream().map(player -> ((PlayerObjectBasicImplementation) player).toLink()).collect(Collectors.toSet()),
+            getOnlinePlayerCount(),
+            getBase().toLink(),
+            getAddress()
         );
     }
 

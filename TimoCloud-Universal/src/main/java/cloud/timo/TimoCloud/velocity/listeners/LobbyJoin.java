@@ -39,20 +39,37 @@ public class LobbyJoin {
         if (!isPending(event.getPlayer().getUniqueId())) return;
 
         Player player = event.getPlayer();
+
+        TimoCloudVelocity.getInstance().info("Finding lobby server for player " + player.getUsername());
+
         final ServerObject freeLobby = TimoCloudVelocity.getInstance().getLobbyManager().getFreeLobby(player.getUniqueId());
         if (freeLobby == null) {
-            TimoCloudVelocity.getInstance().severe("No lobby server found.");
+            TimoCloudVelocity.getInstance().severe("No lobby server found for player " + player.getUsername());
             pending.remove(player.getUniqueId());
             kickPlayer(player);
             return;
         }
+
         final Optional<RegisteredServer> server = TimoCloudVelocity.getInstance().getServer().getServer(freeLobby.getName());
         if (!server.isPresent()) {
-            TimoCloudVelocity.getInstance().severe("No lobby server found.");
+            TimoCloudVelocity.getInstance().severe("Lobby server " + freeLobby.getName() +
+                " not registered in Velocity for player " + player.getUsername());
             pending.remove(player.getUniqueId());
             kickPlayer(player);
             return;
         }
+
+        if (server.get().getServerInfo().getAddress().getPort() <= 0) {
+            TimoCloudVelocity.getInstance().severe("Lobby server " + freeLobby.getName() +
+                " has invalid port " + server.get().getServerInfo().getAddress().getPort());
+            pending.remove(player.getUniqueId());
+            kickPlayer(player);
+            return;
+        }
+
+        TimoCloudVelocity.getInstance().info("Connecting " + player.getUsername() +
+            " to lobby server: " + server.get().getServerInfo().getName() +
+            " at " + server.get().getServerInfo().getAddress());
         event.setResult(ServerPreConnectEvent.ServerResult.allowed(server.get()));
         pending.remove(player.getUniqueId());
     }
@@ -60,10 +77,30 @@ public class LobbyJoin {
     @Subscribe
     public void onServerKick(KickedFromServerEvent event) {
         if (!useFallback()) return;
+
+        TimoCloudVelocity.getInstance().info("LobbyJoin handling kick for player " + event.getPlayer().getUsername());
+
         final ServerObject freeLobby = TimoCloudVelocity.getInstance().getLobbyManager().getFreeLobby(event.getPlayer().getUniqueId());
-        if (freeLobby == null) return;
+        if (freeLobby == null) {
+            TimoCloudVelocity.getInstance().severe("No fallback server found in LobbyJoin for player " + event.getPlayer().getUsername());
+            return;
+        }
+
         final Optional<RegisteredServer> server = TimoCloudVelocity.getInstance().getServer().getServer(freeLobby.getName());
-        if (!server.isPresent()) return;
+        if (!server.isPresent()) {
+            TimoCloudVelocity.getInstance().severe("Fallback server " + freeLobby.getName() +
+                " not registered in Velocity (LobbyJoin) for player " + event.getPlayer().getUsername());
+            return;
+        }
+
+        if (server.get().getServerInfo().getAddress().getPort() <= 0) {
+            TimoCloudVelocity.getInstance().severe("Fallback server " + freeLobby.getName() +
+                " has invalid port " + server.get().getServerInfo().getAddress().getPort() + " (LobbyJoin)");
+            return;
+        }
+
+        TimoCloudVelocity.getInstance().info("LobbyJoin redirecting " + event.getPlayer().getUsername() +
+            " to server: " + server.get().getServerInfo().getName());
         event.setResult(KickedFromServerEvent.RedirectPlayer.create(server.get()));
     }
 

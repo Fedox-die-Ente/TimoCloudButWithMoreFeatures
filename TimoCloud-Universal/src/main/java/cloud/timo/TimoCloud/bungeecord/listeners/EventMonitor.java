@@ -43,9 +43,9 @@ public class EventMonitor implements Listener {
             pending.remove(event.getPlayer().getUniqueId());
         } else { // Server change
             EventTransmitter.sendEvent(new PlayerServerChangeEventBasicImplementation(
-                    playerObject,
-                    previousServer.get(playerObject.getUuid()),
-                    event.getPlayer().getServer().getInfo().getName()));
+                playerObject,
+                previousServer.get(playerObject.getUuid()),
+                event.getPlayer().getServer().getInfo().getName()));
         }
 
         previousServer.put(event.getPlayer().getUniqueId(), event.getPlayer().getServer().getInfo().getName());
@@ -53,8 +53,27 @@ public class EventMonitor implements Listener {
 
     @EventHandler
     public void onPlayerQuitEvent(net.md_5.bungee.api.event.PlayerDisconnectEvent event) {
-        TimoCloudBungee.getInstance().sendPlayerCount();
-        EventTransmitter.sendEvent(new PlayerDisconnectEventBasicImplementation(getPlayer(event.getPlayer())));
+        try {
+            TimoCloudBungee.getInstance().sendPlayerCount();
+            PlayerObject playerObject = getPlayer(event.getPlayer());
+            EventTransmitter.sendEvent(new PlayerDisconnectEventBasicImplementation(playerObject));
+
+            pending.remove(event.getPlayer().getUniqueId());
+            previousServer.remove(event.getPlayer().getUniqueId());
+
+        } catch (Exception e) {
+            TimoCloudBungee.getInstance().severe("Error during player quit event for player " +
+                event.getPlayer().getName() + ": " + e.getMessage());
+            e.printStackTrace();
+
+            try {
+                TimoCloudBungee.getInstance().sendPlayerCount();
+                pending.remove(event.getPlayer().getUniqueId());
+                previousServer.remove(event.getPlayer().getUniqueId());
+            } catch (Exception cleanupException) {
+                TimoCloudBungee.getInstance().severe("Failed to cleanup player data: " + cleanupException.getMessage());
+            }
+        }
     }
 
     private PlayerObject getPlayer(ProxiedPlayer proxiedPlayer) {
