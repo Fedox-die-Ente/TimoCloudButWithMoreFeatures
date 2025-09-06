@@ -53,67 +53,20 @@ public class LobbyManager {
             TimoCloudLogger.getLogger().severe("Error while searching lobby: Could not find specified fallbackGroup '" + fallbackGroup + "'");
             return null;
         }
-
-        TimoCloudLogger.getLogger().info("Searching for lobby server. Group: " + fallbackGroup +
-            ", Total servers: " + group.getServers().size() + ", NotThis: " + notThis);
-
-        Collection<ServerObject> allServers = group.getServers();
-        for (ServerObject server : allServers) {
-            TimoCloudLogger.getLogger().info("Server: " + server.getName() +
-                ", Address: " + (server.getSocketAddress() != null ? server.getSocketAddress().toString() : "null") +
-                ", Port: " + (server.getSocketAddress() != null ? server.getSocketAddress().getPort() : "null") +
-                ", Online: " + server.getOnlinePlayerCount() + "/" + server.getMaxPlayerCount());
-        }
-
-        List<ServerObject> validServers = group.getServers().stream()
-            .filter(server -> server.getMaxPlayerCount() == 0 || server.getOnlinePlayerCount() < server.getMaxPlayerCount())
-            .filter(server -> {
-                boolean valid = server.getSocketAddress() != null && server.getSocketAddress().getPort() > 0;
-                if (!valid) {
-                    TimoCloudLogger.getLogger().warning("Server " + server.getName() + " has invalid socket address: " +
-                        (server.getSocketAddress() != null ? server.getSocketAddress().toString() : "null"));
-                }
-                return valid;
-            })
-            .collect(Collectors.toList());
-
-        List<ServerObject> servers = validServers;
-        if (validServers.size() > 1 && notThis != null) {
-            servers = validServers.stream()
+        List<ServerObject> servers = group.getServers().stream()
                 .filter(server -> !server.getName().equals(notThis))
+                .filter(server -> server.getOnlinePlayerCount() < server.getMaxPlayerCount())
                 .collect(Collectors.toList());
-            TimoCloudLogger.getLogger().info("Applied notThis filter. Servers after exclusion: " + servers.size());
-        } else if (notThis != null) {
-            TimoCloudLogger.getLogger().info("Only one valid server available, ignoring notThis filter for " + notThis);
-        }
-
-        long invalidPortServers = group.getServers().stream()
-            .filter(server -> server.getSocketAddress() == null || server.getSocketAddress().getPort() <= 0)
-            .count();
-        if (invalidPortServers > 0) {
-            TimoCloudLogger.getLogger().warning("Found " + invalidPortServers + " servers with invalid ports in group " + fallbackGroup);
-        }
-
         List<ServerObject> removeServers = new ArrayList<>();
+        ServerObject notThisServer = notThis == null ? null : TimoCloudAPI.getUniversalAPI().getServer(notThis);
+        if (notThisServer != null) removeServers.add(notThisServer);
         List<String> history = getVisitedLobbies(uuid);
 
         for (ServerObject server : servers) {
-            if (history.contains(server.getName())) removeServers.add(server);
+            if (history.contains(server.getName()) && !removeServers.contains(server)) removeServers.add(server);
         }
-
-        if (servers.size() > removeServers.size()) {
-            servers.removeAll(removeServers);
-            TimoCloudLogger.getLogger().info("Removed " + removeServers.size() + " servers from history");
-        } else {
-            TimoCloudLogger.getLogger().info("Not removing history servers as no alternatives available");
-        }
-
-        TimoCloudLogger.getLogger().info("After filtering: " + servers.size() + " valid servers available");
-
-        if (servers.isEmpty()) {
-            TimoCloudLogger.getLogger().warning("No valid lobby servers found for player " + uuid +
-                ". Total servers in group: " + group.getServers().size() +
-                ", Invalid port servers: " + invalidPortServers);
+        servers.removeAll(removeServers);
+        if (servers.size() == 0) {
             return null;
         }
 

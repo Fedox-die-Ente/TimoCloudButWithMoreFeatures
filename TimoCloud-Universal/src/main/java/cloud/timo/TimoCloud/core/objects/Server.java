@@ -92,18 +92,18 @@ public class Server implements Instance, Communicatable {
         try {
             this.starting = true;
             Message message = Message.create()
-                .setType(MessageType.BASE_START_SERVER)
-                .set("name", getName())
-                .set("id", getId())
-                .set("group", getGroup().getName())
-                .set("ram", getGroup().getRam())
-                .set("static", getGroup().isStatic())
-                .setIfNotNull("map", getMap())
-                .set("globalHash", HashUtil.getHashes(TimoCloudCore.getInstance().getFileManager().getServerGlobalDirectory()))
-                .set("spigotParameters", getGroup().getSpigotParameters())
-                .set("javaParameters", getGroup().getJavaParameters())
-                .set("jrePath", getGroup().getJrePath())
-                .set("timeout", getGroup().getTimeout());
+                    .setType(MessageType.BASE_START_SERVER)
+                    .set("name", getName())
+                    .set("id", getId())
+                    .set("group", getGroup().getName())
+                    .set("ram", getGroup().getRam())
+                    .set("static", getGroup().isStatic())
+                    .setIfNotNull("map", getMap())
+                    .set("globalHash", HashUtil.getHashes(TimoCloudCore.getInstance().getFileManager().getServerGlobalDirectory()))
+                    .set("spigotParameters", getGroup().getSpigotParameters())
+                    .set("javaParameters", getGroup().getJavaParameters())
+                    .set("jrePath", getGroup().getJrePath())
+                    .set("timeout", getGroup().getTimeout());
             if (!getGroup().isStatic()) {
                 File templateDirectory = new File(TimoCloudCore.getInstance().getFileManager().getServerTemplatesDirectory(), getGroup().getName());
                 File mapDirectory = new File(TimoCloudCore.getInstance().getFileManager().getServerTemplatesDirectory(), getGroup().getName() + "_" + getMap());
@@ -193,8 +193,8 @@ public class Server implements Instance, Communicatable {
     @Override
     public void kill() {
         Message message = Message.create()
-            .setType(MessageType.BASE_INSTANCE_KILL)
-            .setData(getId());
+                .setType(MessageType.BASE_INSTANCE_KILL)
+                .setData(getId());
         getBase().sendMessage(message);
         onShutdown();
     }
@@ -202,9 +202,9 @@ public class Server implements Instance, Communicatable {
     public void requestPidStatus() {
         if (getPid() == -1) return;
         Message message = Message.create()
-            .setType(MessageType.BASE_PID_EXIST_REQUEST)
-            .set("pid", getPid())
-            .set("id", getId());
+                .setType(MessageType.BASE_PID_EXIST_REQUEST)
+                .set("pid", getPid())
+                .set("id", getId());
         getBase().sendMessage(message);
     }
 
@@ -224,18 +224,13 @@ public class Server implements Instance, Communicatable {
     }
 
     public void onPlayerDisconnect(PlayerObject playerObject) {
-        try {
-            getOnlinePlayers().remove(playerObject);
-        } catch (Exception e) {
-            TimoCloudCore.getInstance().severe("Error removing player " + playerObject.getName() +
-                " from server " + getName() + ": " + e.getMessage());
-        }
+        getOnlinePlayers().remove(playerObject);
     }
 
     @Override
     public void onMessage(Message message, Communicatable sender) {
         if (getChannel() != null &&
-            sender.getChannel().id().equals(getChannel().id())) {
+                sender.getChannel().id().equals(getChannel().id())) {
             //communicate
             lastContact = System.currentTimeMillis();
         }
@@ -547,18 +542,18 @@ public class Server implements Instance, Communicatable {
 
     public ServerObject toServerObject() {
         return new ServerObjectCoreImplementation(
-            getName(),
-            getId(),
-            getGroup().toLink(),
-            getState(),
-            getExtra(),
-            getMap(),
-            getMotd(),
-            getOnlinePlayers().stream().map(player -> ((PlayerObjectBasicImplementation) player).toLink()).collect(Collectors.toSet()),
-            getOnlinePlayerCount(),
-            getMaxPlayers(),
-            getBase().toLink(),
-            getAddress()
+                getName(),
+                getId(),
+                getGroup().toLink(),
+                getState(),
+                getExtra(),
+                getMap(),
+                getMotd(),
+                getOnlinePlayers().stream().map(player -> ((PlayerObjectBasicImplementation) player).toLink()).collect(Collectors.toSet()),
+                getOnlinePlayerCount(),
+                getMaxPlayers(),
+                getBase().toLink(),
+                getAddress()
         );
     }
 
