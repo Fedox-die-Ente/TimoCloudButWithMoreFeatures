@@ -1,0 +1,6 @@
+jdk:
+  - openjdk8
+
+build:
+  commands:
+    - mvn clean install -DskipTests
